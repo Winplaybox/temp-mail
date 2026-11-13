@@ -1,4 +1,5 @@
-export const API_URL = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000").replace(/\/$/, "");
+// Same origin by default (Next.js API routes). Set NEXT_PUBLIC_API_URL only to point at another API.
+export const API_URL = (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/$/, "");
 
 export type Inbox = {
   id: string;
@@ -38,8 +39,10 @@ export type FullMessage = {
 };
 
 export class ApiError extends Error {
-  constructor(public status: number, message: string) {
+  status: number;
+  constructor(status: number, message: string) {
     super(message);
+    this.status = status;
   }
 }
 
@@ -82,8 +85,24 @@ export const api = {
     call<FullMessage>(`/api/inboxes/${i.id}/messages/${mid}`, { token: i.token }),
   removeMessage: (i: Pick<Inbox, "id" | "token">, mid: string) =>
     call<void>(`/api/inboxes/${i.id}/messages/${mid}`, { method: "DELETE", token: i.token }),
-  attachment: (i: Pick<Inbox, "id" | "token">, aid: string) =>
-    call<{ url: string }>(`/api/inboxes/${i.id}/attachments/${aid}`, { token: i.token }),
+  /** Fetches the file with the inbox token and saves it through a temporary link. */
+  download: async (i: Pick<Inbox, "id" | "token">, aid: string, filename: string) => {
+    let res: Response;
+    try {
+      res = await fetch(`${API_URL}/api/inboxes/${i.id}/attachments/${aid}`, { headers: { "X-Inbox-Token": i.token } });
+    } catch {
+      throw new ApiError(0, "network");
+    }
+    if (!res.ok) throw new ApiError(res.status, "Download failed");
+    const url = URL.createObjectURL(await res.blob());
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 10_000);
+  },
   simulate: (i: Pick<Inbox, "id" | "token">) =>
-    call<{ id: string }>(`/api/dev/inboxes/${i.id}/simulate`, { method: "POST", token: i.token }),
+    call<{ id: string }>(`/api/inboxes/${i.id}/simulate`, { method: "POST", token: i.token }),
 };

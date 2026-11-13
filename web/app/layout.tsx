@@ -3,6 +3,7 @@ import Script from "next/script";
 import "@fontsource-variable/bricolage-grotesque";
 import "@fontsource-variable/figtree";
 import "@fontsource-variable/jetbrains-mono";
+import "@fontsource-variable/noto-sans-devanagari";
 import "./globals.css";
 import { Providers } from "@/components/Providers";
 import { Header, Footer } from "@/components/Chrome";

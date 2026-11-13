@@ -1,54 +1,50 @@
 # WinPlayBox Temp Mail
 
-Disposable, receive-only inboxes at **temp-mail.winplaybox.in**.
+Disposable, receive-only inboxes at **https://temp-mail.winplaybox.in** — addresses look like
+`brisk.otter421@temp-mail.winplaybox.in`.
 
 ```
-Sender ──► MX (Cloudflare, mail domain e.g. wpbmail.xyz)
-          └─► Email Routing catch-all ─► worker/ (parse) ─► Supabase (Postgres + Storage)
-                                                     └─► Realtime broadcast "new_mail"
-Browser (web/, Next.js on Hostinger) ──► backend/ (FastAPI on Render) ──► Supabase
-        └── listens to Realtime ping → refetches inbox
-Supabase pg_cron (every 10 min) ──► backend /internal/cleanup (deletes expired + keeps Render awake)
+Sender ─► MX temp-mail.winplaybox.in → ForwardEmail (free, catch-all)
+             └─► POST https://temp-mail.winplaybox.in/api/ingest/<secret>   (retries for days if we're down)
+                    └─► Supabase RPC tm_ingest → tm_messages / tm_attachments
+                                               └─► Realtime "new_mail" ping → open tab refetches instantly
+Browser ─► Next.js (pages + /api/*) on Hostinger Node.js ─► Supabase RPCs (tm_*)
+Supabase pg_cron (10 min) ─► tm_cleanup_expired()
+GitHub Actions (hourly) ─► Python worker: cleanup, stats, health, end-to-end self-test
 ```
 
 | Folder | What | Runs on |
 |---|---|---|
-| `web/` | Next.js 15 site — inbox UI, SEO pages, en/hi, dark mode | Hostinger Node.js |
-| `backend/` | FastAPI — inboxes, messages, attachments, rate limits, cleanup | Render (free) |
-| `worker/` | Cloudflare Email Worker — stores incoming mail | Cloudflare (free) |
-| `supabase/` | SQL migrations — schema, RLS, storage bucket, cron | Supabase (free) |
+| `web/` | Next.js 15 site + API routes + mail webhook | Hostinger Node.js (always on, no cold start) |
+| `worker-py/` | Python maintenance worker | GitHub Actions, hourly |
+| `supabase/` | `tm_` schema, secure RPCs, cron | Supabase project `winplayboxsite` |
 
 ## Features
-- Random address on page load; copy, QR code, new address, custom name, delete
-- Choose lifetime (10 min / 1 hour / 1 day) and add time; postmark countdown
-- Several saved addresses per browser, quick switch
-- Instant delivery (Realtime) with 10 s polling fallback
-- Verification-code detection with one-tap copy
-- HTML mail in a sandboxed frame, scripts never run, tracking images blocked until allowed
-- Attachments (signed, 2-minute download links)
-- Browser notifications + unread count in tab title
-- English / हिन्दी, light / dark, mobile-first
-- Rate limits per IP (hashed), reserved names, receive-only
-- Privacy + Terms pages, sitemap, robots, FAQ structured data, optional AdSense
+- Address ready on page load; copy, QR code, new address, choose your own name, delete
+- Lifetime 10 min / 1 hour / 1 day, add time anytime (max 7 days), postmark countdown
+- Several saved addresses per browser with quick switching
+- Instant delivery via Realtime, 10 s polling fallback
+- Verification-code detection with one-tap copy (list and reader)
+- HTML mail in a sandboxed frame: scripts never run, tracking images blocked until allowed
+- Attachments (5 MB each, 10 MB per mail) with direct download
+- Browser notifications + unread count in the tab title
+- English / हिन्दी, light / dark, mobile-first, keyboard and screen-reader friendly
+- Rate limits per hashed IP, reserved names, receive-only, privacy + terms pages, SEO + FAQ schema, optional AdSense
 
-## Security model
-- Every table has RLS on with **no policies** → the public anon key can't read anything.
-- Only the backend and worker use the `service_role` key, server-side.
-- Each inbox has a random 256-bit token kept in the browser; the DB stores only its SHA-256.
-- IPs are stored only as salted hashes, for rate limiting.
+## Security
+- `tm_` tables have RLS on with no policies — the public key can't read them.
+- All access goes through `SECURITY DEFINER` functions that require the server secret
+  (only its SHA-256 is in the DB) **and**, for inbox data, the inbox token (only its SHA-256 is stored).
+- The token lives in the visitor's browser; nothing else can open an inbox.
+- The webhook path carries its own secret; unknown recipients are accepted and dropped.
 
 ## Local development
 ```bash
-# API with in-memory store (no Supabase needed)
-cd backend && pip install -r requirements.txt
-DEV_MODE=1 uvicorn app.main:app --reload --port 8000
-
-# Website
 cd web && npm install
-NEXT_PUBLIC_API_URL=http://localhost:8000 NEXT_PUBLIC_DEV=1 npm run dev
-# → http://localhost:3000, use "Send test mail" to simulate a message
+TEMPMAIL_DEV_MEMORY=1 NEXT_PUBLIC_DEV=1 npm run dev   # in-memory store, "Send test mail" button
+npm test                                              # service + OTP tests
+
+cd ../worker-py && pip install -r requirements.txt pytest && pytest
 ```
 
-Tests: `cd backend && pytest` · `cd worker && npm test`
-
-Deploy: see [docs/DEPLOY.md](docs/DEPLOY.md).
+Deploy and operations: [docs/DEPLOY.md](docs/DEPLOY.md).

@@ -1,26 +1,26 @@
-name: Manual cleanup (backup)
+name: Maintenance (Python worker)
 
-# The real schedule runs inside Supabase (supabase/migrations/0002_cron.sql) so it
-# doesn't burn GitHub Actions minutes. Use this button if that ever stops.
+# Hourly: cleanup expired inboxes, usage stats, site health, and an end-to-end self-test
+# (create inbox → webhook mail → code detected → delete). ~1 min per run ≈ 720 min/month.
 on:
+  schedule:
+    - cron: "23 * * * *"
   workflow_dispatch:
 
 jobs:
-  cleanup:
+  maintenance:
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    defaults: { run: { working-directory: worker-py } }
     steps:
-      - name: Call cleanup endpoint
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12", cache: pip, cache-dependency-path: worker-py/requirements.txt }
+      - run: pip install -r requirements.txt
+      - run: python -m tempmail_worker
         env:
-          API_URL: ${{ secrets.TEMPMAIL_API_URL }}
-          CRON_SECRET: ${{ secrets.TEMPMAIL_CRON_SECRET }}
-        run: |
-          if [ -z "$API_URL" ] || [ -z "$CRON_SECRET" ]; then
-            echo "Set TEMPMAIL_API_URL and TEMPMAIL_CRON_SECRET repo secrets"; exit 0
-          fi
-          # First call may wake Render from sleep; retry once.
-          for i in 1 2; do
-            if curl -fsS --max-time 90 -X POST "$API_URL/internal/cleanup" -H "X-Cron-Secret: $CRON_SECRET"; then exit 0; fi
-            sleep 20
-          done
-          exit 1
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          TEMPMAIL_SERVER_SECRET: ${{ secrets.TEMPMAIL_SERVER_SECRET }}
+          TEMPMAIL_INGEST_SECRET: ${{ secrets.TEMPMAIL_INGEST_SECRET }}
+          TEMPMAIL_SITE_URL: https://temp-mail.winplaybox.in

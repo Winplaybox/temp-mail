@@ -181,10 +181,9 @@ function Reader({
     if (doc && frame.current) frame.current.style.height = `${Math.max(240, doc.documentElement.scrollHeight + 4)}px`;
   };
 
-  const download = async (aid: string) => {
+  const download = async (aid: string, filename: string) => {
     try {
-      const { url } = await api.attachment(inbox, aid);
-      window.open(url, "_blank", "noopener");
+      await api.download(inbox, aid, filename);
     } catch (e) {
       toast(e instanceof ApiError && e.status === 0 ? t.networkError : t.genericError, "error");
     }
@@ -280,7 +279,7 @@ function Reader({
                 <Icon name="clip" size={16} />
                 <span className="file-name">{a.filename}</span>
                 <span className="muted">{bytes(a.size_bytes)}</span>
-                <button type="button" className="btn btn-quiet" onClick={() => download(a.id)}>
+                <button type="button" className="btn btn-quiet" onClick={() => download(a.id, a.filename)}>
                   <Icon name="download" /> {t.download}
                 </button>
               </li>

@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { extractOtp } from "../src/otp.ts";
+import { extractOtp } from "../lib/server/otp.ts";
 
 test("finds code next to keyword", () => {
   assert.equal(extractOtp("Your login", "Hi,\nYour verification code is 482913.\nThanks 2026"), "482913");

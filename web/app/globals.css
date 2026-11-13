@@ -18,8 +18,8 @@
   --otp-line: #d9a514;
   --shadow: 0 1px 0 rgba(16, 42, 67, 0.06), 0 12px 32px -18px rgba(16, 42, 67, 0.35);
 
-  --font-display: "Bricolage Grotesque Variable", "Figtree Variable", system-ui, sans-serif;
-  --font-body: "Figtree Variable", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Bricolage Grotesque Variable", "Noto Sans Devanagari Variable", "Figtree Variable", system-ui, sans-serif;
+  --font-body: "Figtree Variable", "Noto Sans Devanagari Variable", system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: "JetBrains Mono Variable", ui-monospace, "SFMono-Regular", monospace;
 
   /* 1.25 scale on a 16px base */
@@ -209,6 +209,13 @@ select {
   line-height: 1.02;
   text-wrap: balance;
 }
+html[lang="hi"] .hero h1,
+html[lang="hi"] .content h2,
+html[lang="hi"] .prose h1 {
+  line-height: 1.3;
+  letter-spacing: 0;
+  font-stretch: 100%;
+}
 .lead {
   margin-top: 14px;
   font-size: var(--t-lg);
@@ -329,7 +336,7 @@ select {
   text-align: left;
   cursor: copy;
   font-family: var(--font-mono);
-  font-size: clamp(1.2rem, 0.75rem + 2.4vw, 2.6rem);
+  font-size: clamp(1.15rem, 0.6rem + 2.1vw, 1.95rem);
   font-weight: 600;
   letter-spacing: -0.02em;
   line-height: 1.2;
