@@ -56,3 +56,12 @@ def test_unhealthy_site_fails():
     report = run_all(S, httpx.Client(transport=httpx.MockTransport(make_handler(state))))
     assert not report.ok
     assert any("Site health" in line and "❌" in line for line in report.lines)
+
+
+def test_runs_without_secrets():
+    state = {}
+    bare = Settings(supabase_url="", anon_key="", server_secret="", site_url="https://site.test")
+    report = run_all(bare, httpx.Client(transport=httpx.MockTransport(make_handler(state))))
+    assert report.ok, report.lines
+    assert state["deleted"] is True
+    assert any("skipped" in line for line in report.lines)

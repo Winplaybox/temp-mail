@@ -6,14 +6,12 @@ from .jobs import Settings, run_all
 
 
 def main() -> int:
-    missing = [k for k in ("SUPABASE_URL", "SUPABASE_ANON_KEY", "TEMPMAIL_SERVER_SECRET") if not os.getenv(k)]
-    if missing:
-        print(f"Missing env: {', '.join(missing)}", file=sys.stderr)
-        return 2
+    # All secrets are optional: without them only the public checks run
+    # (site health + create/delete an address). Cleanup also runs in Supabase pg_cron.
     s = Settings(
-        supabase_url=os.environ["SUPABASE_URL"],
-        anon_key=os.environ["SUPABASE_ANON_KEY"],
-        server_secret=os.environ["TEMPMAIL_SERVER_SECRET"],
+        supabase_url=os.getenv("SUPABASE_URL", ""),
+        anon_key=os.getenv("SUPABASE_ANON_KEY", ""),
+        server_secret=os.getenv("TEMPMAIL_SERVER_SECRET", ""),
         site_url=os.getenv("TEMPMAIL_SITE_URL", "https://temp-mail.winplaybox.in").rstrip("/"),
         ingest_secret=os.getenv("TEMPMAIL_INGEST_SECRET", ""),
     )

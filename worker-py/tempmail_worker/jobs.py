@@ -87,9 +87,21 @@ def health(s: Settings, http: httpx.Client, report: Report) -> None:
         report.add(False, f"Site unreachable: {e}")
 
 
+def public_check(s: Settings, http: httpx.Client, report: Report) -> None:
+    """Create and delete an address through the public API (no secrets needed)."""
+    try:
+        r = http.post(f"{s.site_url}/api/inboxes", json={"ttl_minutes": 10})
+        r.raise_for_status()
+        inbox = r.json()
+        d = http.delete(f"{s.site_url}/api/inboxes/{inbox['id']}", headers={"X-Inbox-Token": inbox["token"]})
+        report.add(d.status_code == 204, f"Address create/delete works ({inbox['address'].split('@')[1]})")
+    except Exception as e:  # noqa: BLE001
+        report.add(False, f"Address create failed: {e}")
+
+
 def selftest(s: Settings, http: httpx.Client, report: Report) -> None:
     if not s.ingest_secret:
-        report.add(True, "Self-test skipped (no ingest secret)")
+        public_check(s, http, report)
         return
     inbox = None
     try:
@@ -120,9 +132,12 @@ def selftest(s: Settings, http: httpx.Client, report: Report) -> None:
 def run_all(s: Settings, client: httpx.Client | None = None) -> Report:
     report = Report()
     with client or httpx.Client(timeout=s.timeout, headers={"User-Agent": "wpb-tempmail-worker/1.0"}) as http:
-        rpc = Rpc(s, http)
-        cleanup(rpc, report)
-        stats(rpc, report)
+        if s.supabase_url and s.anon_key and s.server_secret:
+            rpc = Rpc(s, http)
+            cleanup(rpc, report)
+            stats(rpc, report)
+        else:
+            report.add(True, "Cleanup/stats skipped (no DB secrets) — Supabase pg_cron cleans up every 10 min")
         health(s, http, report)
         selftest(s, http, report)
     return report

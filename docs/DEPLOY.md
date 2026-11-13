@@ -35,7 +35,8 @@ Then `insert into public.tm_domains (domain) values ('<mail domain>');`. Disable
 `update public.tm_domains set is_active = false where domain = '<mail domain>';` — saved addresses on it
 are dropped from visitors' browsers on their next visit.
 
-## 4. GitHub Actions secrets (repo → Settings → Secrets → Actions)
+## 4. GitHub Actions secrets (optional — repo → Settings → Secrets → Actions)
+Without them the hourly worker still checks site health and address create/delete; cleanup runs in pg_cron anyway.
 `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `TEMPMAIL_SERVER_SECRET`, `TEMPMAIL_INGEST_SECRET` — used by the hourly
 Python worker (`.github/workflows/cron.yml`). Run it manually from the Actions tab after setup.
 
