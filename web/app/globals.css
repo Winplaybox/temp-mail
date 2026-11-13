@@ -7,7 +7,7 @@
   --surface-2: #f3f6fa;
   --ink: #102a43;
   --ink-2: #3e5468;
-  --muted: #5f7186;
+  --muted: #526478;
   --line: #cfd9e4;
   --air-red: #d62839;
   --air-blue: #1e4fd8;
@@ -18,9 +18,9 @@
   --otp-line: #d9a514;
   --shadow: 0 1px 0 rgba(16, 42, 67, 0.06), 0 12px 32px -18px rgba(16, 42, 67, 0.35);
 
-  --font-display: "Bricolage Grotesque Variable", "Noto Sans Devanagari Variable", "Figtree Variable", system-ui, sans-serif;
-  --font-body: "Figtree Variable", "Noto Sans Devanagari Variable", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-mono: "JetBrains Mono Variable", ui-monospace, "SFMono-Regular", monospace;
+  --font-display: var(--font-bricolage), var(--font-devanagari), var(--font-figtree), system-ui, sans-serif;
+  --font-body: var(--font-figtree), var(--font-devanagari), system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, "SFMono-Regular", monospace;
 
   /* 1.25 scale on a 16px base */
   --t-xs: 0.8rem;
@@ -64,6 +64,13 @@
 
 html {
   -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+  scroll-padding-top: 16px;
+}
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
 }
 
 body {
@@ -194,6 +201,37 @@ select {
   display: flex;
   gap: 6px;
   align-items: center;
+}
+.header-actions .btn-quiet {
+  text-decoration: none;
+}
+.header-nav {
+  display: flex;
+  gap: 22px;
+  margin-left: auto;
+  margin-right: 8px;
+}
+.header-nav a {
+  color: var(--ink-2);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: var(--t-sm);
+  padding: 6px 2px;
+  border-bottom: 2px solid transparent;
+}
+.header-nav a:hover {
+  color: var(--ink);
+  border-bottom-color: var(--air-red);
+}
+.crumbs {
+  display: flex;
+  gap: 8px;
+  font-size: var(--t-sm);
+  color: var(--muted);
+  padding-top: 8px;
+}
+.crumbs a {
+  color: var(--ink-2);
 }
 
 /* ------------------------------------------------------------------ hero */
@@ -1146,7 +1184,29 @@ html[lang="hi"] .prose h1 {
 
 .ad {
   margin: 24px 0;
-  min-height: 90px;
+}
+.more-tools ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px 32px;
+}
+.more-tools li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 14px 0;
+  border-top: 1px solid var(--line);
+}
+.more-tools a {
+  font-weight: 700;
+  font-size: var(--t-lg);
+  text-decoration: none;
+}
+.more-tools a:hover {
+  text-decoration: underline;
 }
 
 /* ------------------------------------------------------------------ prose pages */
@@ -1181,10 +1241,33 @@ html[lang="hi"] .prose h1 {
   font-size: var(--t-sm);
   color: var(--ink-2);
 }
+.footer-cols {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr;
+  gap: 28px;
+  padding-bottom: 12px;
+}
+.footer-cols p {
+  max-width: 36ch;
+}
+.footer-brand,
+.footer-head {
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 8px;
+}
 .site-footer nav {
   display: flex;
-  flex-wrap: wrap;
-  gap: 18px;
+  flex-direction: column;
+  gap: 8px;
+}
+.site-footer nav a {
+  text-decoration: none;
+}
+.site-footer nav a:hover {
+  color: var(--ink);
+  text-decoration: underline;
 }
 .site-footer a {
   color: var(--ink-2);
@@ -1192,6 +1275,18 @@ html[lang="hi"] .prose h1 {
 
 /* ------------------------------------------------------------------ responsive */
 @media (max-width: 860px) {
+  .header-nav {
+    display: none;
+  }
+  .footer-cols {
+    grid-template-columns: 1fr 1fr;
+  }
+  .footer-cols > div:first-child {
+    grid-column: 1 / -1;
+  }
+  .more-tools ul {
+    grid-template-columns: 1fr;
+  }
   .envelope-inner {
     grid-template-columns: 1fr;
     padding: 20px;

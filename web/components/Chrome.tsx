@@ -3,12 +3,13 @@
 import Link from "next/link";
 import { useApp } from "./Providers";
 import { Icon } from "./Icon";
+import { LANDINGS } from "@/lib/landing";
 
 export function Header() {
-  const { t, lang, setLang, theme, toggleTheme } = useApp();
+  const { t, lang, theme, toggleTheme } = useApp();
   return (
     <header className="site-header">
-      <Link href="/" className="wordmark" aria-label={`${t.brand} ${t.brandBy}`}>
+      <Link href="/" className="wordmark">
         <svg viewBox="0 0 40 28" className="wordmark-mark" aria-hidden="true">
           <rect x="1" y="1" width="38" height="26" rx="3" className="wm-env" />
           <path d="M1 4 L20 17 L39 4" className="wm-flap" />
@@ -18,10 +19,15 @@ export function Header() {
           <small>{t.brandBy}</small>
         </span>
       </Link>
+      <nav className="header-nav" aria-label="Main">
+        <a href={lang === "hi" ? "/hi#how" : "/#how"}>{t.stepsTitle}</a>
+        <a href={lang === "hi" ? "/hi#faq" : "/#faq"}>{t.faqTitle}</a>
+        <Link href="/10-minute-mail">10 min mail</Link>
+      </nav>
       <div className="header-actions">
-        <button type="button" className="btn btn-quiet" onClick={() => setLang(lang === "en" ? "hi" : "en")} lang={lang === "en" ? "hi" : "en"}>
+        <Link href={lang === "hi" ? "/" : "/hi"} className="btn btn-quiet" hrefLang={lang === "hi" ? "en" : "hi"} lang={lang === "hi" ? "en" : "hi"}>
           {t.language}
-        </button>
+        </Link>
         <button
           type="button"
           className="btn btn-icon"
@@ -36,12 +42,12 @@ export function Header() {
   );
 }
 
-export function Hero() {
+export function Hero({ h1, lead }: { h1?: string; lead?: string }) {
   const { t } = useApp();
   return (
     <div className="hero">
-      <h1>{t.h1}</h1>
-      <p className="lead">{t.lead}</p>
+      <h1>{h1 ?? t.h1}</h1>
+      <p className="lead">{lead ?? t.lead}</p>
     </div>
   );
 }
@@ -50,14 +56,14 @@ export function SiteContent() {
   const { t } = useApp();
   return (
     <div className="content">
-      <section className="about" aria-labelledby="about-title">
+      <section className="about" aria-labelledby="about-title" id="about">
         <h2 id="about-title">{t.aboutTitle}</h2>
         {t.aboutBody.map((p) => (
           <p key={p}>{p}</p>
         ))}
       </section>
 
-      <section aria-labelledby="steps-title">
+      <section aria-labelledby="steps-title" id="how">
         <h2 id="steps-title">{t.stepsTitle}</h2>
         <ol className="steps">
           {t.steps.map((s) => (
@@ -69,7 +75,7 @@ export function SiteContent() {
         </ol>
       </section>
 
-      <section aria-labelledby="features-title">
+      <section aria-labelledby="features-title" id="features">
         <h2 id="features-title">{t.featuresTitle}</h2>
         <dl className="features">
           {t.features.map((f) => (
@@ -81,7 +87,7 @@ export function SiteContent() {
         </dl>
       </section>
 
-      <section aria-labelledby="faq-title" className="faq">
+      <section aria-labelledby="faq-title" className="faq" id="faq">
         <h2 id="faq-title">{t.faqTitle}</h2>
         {t.faq.map((f) => (
           <details key={f.q}>
@@ -99,14 +105,30 @@ export function Footer() {
   const year = new Date().getFullYear();
   return (
     <footer className="site-footer">
-      <p>{t.footerNote}</p>
-      <nav aria-label={t.moreTools}>
-        <Link href="/privacy">{t.privacy}</Link>
-        <Link href="/terms">{t.terms}</Link>
-        <a href="https://winplaybox.in">WinPlayBox</a>
-        <a href="https://ovd.winplaybox.in">OVD</a>
-        <a href="https://pricewatch.winplaybox.in">PriceWatch</a>
-      </nav>
+      <div className="footer-cols">
+        <div>
+          <p className="footer-brand">{t.brand}</p>
+          <p>{t.footerNote}</p>
+        </div>
+        <nav aria-label="Temp mail tools">
+          <p className="footer-head">Tools</p>
+          <Link href="/">Temp mail</Link>
+          {LANDINGS.map((l) => (
+            <Link key={l.slug} href={`/${l.slug}`}>
+              {l.title.split(" — ")[0]}
+            </Link>
+          ))}
+          <Link href="/hi">टेम्प मेल (हिन्दी)</Link>
+        </nav>
+        <nav aria-label={t.moreTools}>
+          <p className="footer-head">{t.moreTools}</p>
+          <a href="https://winplaybox.in">WinPlayBox</a>
+          <a href="https://ovd.winplaybox.in">OVD downloader</a>
+          <a href="https://pricewatch.winplaybox.in">PriceWatch</a>
+          <Link href="/privacy">{t.privacy}</Link>
+          <Link href="/terms">{t.terms}</Link>
+        </nav>
+      </div>
       <p className="muted">© {year} WinPlayBox</p>
     </footer>
   );

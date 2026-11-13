@@ -26,17 +26,18 @@ function read<T extends string>(key: string, allowed: T[], fallback: T): T {
   }
 }
 
-export function Providers({ children }: { children: React.ReactNode }) {
-  const [lang, setLangState] = useState<Lang>("en");
+export function Providers({ children, initialLang = "en" }: { children: React.ReactNode; initialLang?: Lang }) {
+  const [lang, setLangState] = useState<Lang>(initialLang);
   const [theme, setTheme] = useState<Theme>("light");
   const [toasts, setToasts] = useState<Toast[]>([]);
   const nextId = useRef(1);
 
   useEffect(() => {
-    setLangState(read<Lang>("wpb.tm.lang", ["en", "hi"], navigator.language.startsWith("hi") ? "hi" : "en"));
+    // Language comes from the URL: / is English, /hi is Hindi.
+    setLangState(initialLang);
     const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
     setTheme(read<Theme>("wpb.tm.theme", ["light", "dark"], prefersDark ? "dark" : "light"));
-  }, []);
+  }, [initialLang]);
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;

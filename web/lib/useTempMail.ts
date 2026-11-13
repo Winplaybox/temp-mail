@@ -38,7 +38,7 @@ async function realtimeClient(): Promise<SupabaseClient | null> {
   return supabase;
 }
 
-export function useTempMail(onNewMail?: (count: number, latest: MessageSummary) => void) {
+export function useTempMail(onNewMail?: (count: number, latest: MessageSummary) => void, initialTtl?: number) {
   const [inboxes, setInboxes] = useState<Inbox[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [messages, setMessages] = useState<MessageSummary[]>([]);
@@ -163,7 +163,7 @@ export function useTempMail(onNewMail?: (count: number, latest: MessageSummary) 
       save(saved, pick.id);
       setStatus("ready");
     } else {
-      create().catch(() => undefined);
+      create(initialTtl ? { ttl_minutes: initialTtl } : {}).catch(() => undefined);
     }
   }
 

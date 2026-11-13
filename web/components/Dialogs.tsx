@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import QRCode from "qrcode";
 import { useApp } from "./Providers";
 import { Icon } from "./Icon";
 
@@ -30,7 +29,8 @@ export function QrDialog({ open, address, onClose }: { open: boolean; address: s
   const { t } = useApp();
   const [svg, setSvg] = useState("");
   useEffect(() => {
-    if (open && address) QRCode.toString(address, { type: "svg", margin: 1, errorCorrectionLevel: "M" }).then(setSvg);
+    if (open && address)
+      import("qrcode").then((QR) => QR.toString(address, { type: "svg", margin: 1, errorCorrectionLevel: "M" })).then(setSvg);
   }, [open, address]);
   return (
     <Modal open={open} onClose={onClose} labelledBy="qr-title">

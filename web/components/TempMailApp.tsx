@@ -13,7 +13,7 @@ import { AdSlot } from "./AdSlot";
 
 const DEV = process.env.NEXT_PUBLIC_DEV === "1";
 
-export function TempMailApp() {
+export function TempMailApp({ initialTtl }: { initialTtl?: number } = {}) {
   const { t, toast } = useApp();
   const [unseen, setUnseen] = useState(0);
   const [notify, setNotify] = useState(false);
@@ -32,7 +32,7 @@ export function TempMailApp() {
     [notify, t],
   );
 
-  const tm = useTempMail(onNewMail);
+  const tm = useTempMail(onNewMail, initialTtl);
   const [qrOpen, setQrOpen] = useState(false);
   const [newOpen, setNewOpen] = useState(false);
 
@@ -154,7 +154,7 @@ export function TempMailApp() {
         onSimulate={DEV && tm.active ? () => api.simulate(tm.active!).then(() => tm.refresh()).catch(fail) : undefined}
       />
 
-      <AdSlot slot="inbox-below" />
+      <AdSlot />
 
       <QrDialog open={qrOpen} address={tm.active?.address ?? ""} onClose={() => setQrOpen(false)} />
       <NewAddressDialog
