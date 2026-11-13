@@ -39,7 +39,7 @@ export const baseMetadata: Metadata = {
     follow: true,
     googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1 },
   },
-  verification: process.env.NEXT_PUBLIC_GSC_VERIFICATION ? { google: process.env.NEXT_PUBLIC_GSC_VERIFICATION } : undefined,
+  verification: { google: process.env.NEXT_PUBLIC_GSC_VERIFICATION || "F7lEb2ytBRtc0Ng0VJU7PPEkz0vJj_kqkvkUpm0jrNY" },
   other: process.env.NEXT_PUBLIC_ADSENSE_CLIENT ? { "google-adsense-account": process.env.NEXT_PUBLIC_ADSENSE_CLIENT } : undefined,
 };
 
