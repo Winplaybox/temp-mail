@@ -1,0 +1,26 @@
+name: Manual cleanup (backup)
+
+# The real schedule runs inside Supabase (supabase/migrations/0002_cron.sql) so it
+# doesn't burn GitHub Actions minutes. Use this button if that ever stops.
+on:
+  workflow_dispatch:
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Call cleanup endpoint
+        env:
+          API_URL: ${{ secrets.TEMPMAIL_API_URL }}
+          CRON_SECRET: ${{ secrets.TEMPMAIL_CRON_SECRET }}
+        run: |
+          if [ -z "$API_URL" ] || [ -z "$CRON_SECRET" ]; then
+            echo "Set TEMPMAIL_API_URL and TEMPMAIL_CRON_SECRET repo secrets"; exit 0
+          fi
+          # First call may wake Render from sleep; retry once.
+          for i in 1 2; do
+            if curl -fsS --max-time 90 -X POST "$API_URL/internal/cleanup" -H "X-Cron-Secret: $CRON_SECRET"; then exit 0; fi
+            sleep 20
+          done
+          exit 1
