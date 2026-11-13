@@ -22,8 +22,8 @@ Each mail domain gets two MX records and one TXT record at its name:
 | Mail domain | DNS zone | Record name |
 |---|---|---|
 | `buzzstormnow.com` | buzzstormnow.com | `@` (whole domain — its Hostinger mailboxes no longer receive) |
-| `mail.householdia.in` | householdia.in | `mail` (store mailboxes untouched) |
-| `mail.smartbuyonline.in` | smartbuyonline.in | `mail` (store mailboxes untouched) |
+
+Use whole domains only: ForwardEmail's free plan covers catch-all on a domain, while subdomains need a paid plan.
 
 | Type | Value | Priority |
 |---|---|---|

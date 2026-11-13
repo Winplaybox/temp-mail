@@ -1,7 +1,7 @@
 # WinPlayBox Temp Mail
 
-Disposable, receive-only inboxes. Site: **https://temp-mail.winplaybox.in**. Mail domains (table `tm_domains`):
-`buzzstormnow.com` (default), `mail.householdia.in`, `mail.smartbuyonline.in` — e.g. `brisk.otter421@buzzstormnow.com`.
+Disposable, receive-only inboxes. Site: **https://temp-mail.winplaybox.in**. Mail domain (table `tm_domains`): `buzzstormnow.com` — e.g. `brisk.otter421@buzzstormnow.com`.
+Everything runs on free plans (ForwardEmail free supports catch-all webhooks on a whole domain).
 
 ```
 Sender ─► MX of each mail domain → ForwardEmail (free, catch-all)
