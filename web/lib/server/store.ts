@@ -53,6 +53,7 @@ export interface Store {
   ingest(i: IngestInput): Promise<string | null>;
   cleanup(): Promise<number>;
   stats(): Promise<Json>;
+  logIngest(e: { recipients: string[]; header_to: string | null; from: string | null; subject: string | null; stored: number; note: string }): Promise<void>;
 }
 
 // ------------------------------------------------------------------ Supabase (PostgREST RPC)
@@ -148,6 +149,16 @@ export class RpcStore implements Store {
   }
   stats() {
     return this.rpc<Json>("tm_stats", {});
+  }
+  async logIngest(e: Parameters<Store["logIngest"]>[0]) {
+    await this.rpc("tm_log_ingest", {
+      p_recipients: e.recipients,
+      p_header_to: e.header_to,
+      p_from: e.from,
+      p_subject: e.subject,
+      p_stored: e.stored,
+      p_note: e.note,
+    });
   }
 }
 
@@ -310,5 +321,9 @@ export class MemoryStore implements Store {
   }
   async stats() {
     return { active_inboxes: this.inboxes.size, messages: this.messages.size };
+  }
+  ingestLog: Parameters<Store["logIngest"]>[0][] = [];
+  async logIngest(e: Parameters<Store["logIngest"]>[0]) {
+    this.ingestLog.push(e);
   }
 }

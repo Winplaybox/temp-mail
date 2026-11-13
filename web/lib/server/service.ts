@@ -107,14 +107,32 @@ export function createService(store: Store, cfg: Config) {
 
       if (head === "ingest" && req.method === "POST") {
         if (!cfg.ingestSecret || !id || !safeEqual(id, cfg.ingestSecret)) return err(404, "Not found.");
-        const payload = (await req.body()) as ForwardEmailPayload;
+        const payload = ((await req.body()) ?? {}) as ForwardEmailPayload;
         const known = (await domains()).map((d) => d.domain);
-        const rcpts = recipientsOf(payload ?? {}, known);
+        const rcpts = recipientsOf(payload, known);
         const stored: string[] = [];
-        for (const r of rcpts) {
-          const mid = await store.ingest(normalize(payload, r, req.rawLength));
-          if (mid) stored.push(mid);
+        const headerTo = Array.isArray(payload.to) ? payload.to.map((t) => t.text).join(", ") : payload.to?.text ?? null;
+        const log = (note: string) =>
+          store
+            .logIngest({
+              recipients: rcpts.length ? rcpts : (payload.recipients ?? []).map(String),
+              header_to: headerTo,
+              from: payload.from?.value?.[0]?.address ?? null,
+              subject: payload.subject ?? null,
+              stored: stored.length,
+              note,
+            })
+            .catch(() => undefined);
+        try {
+          for (const r of rcpts) {
+            const mid = await store.ingest(normalize(payload, r, req.rawLength));
+            if (mid) stored.push(mid);
+          }
+        } catch (e) {
+          await log(`error: ${e instanceof Error ? e.message : String(e)}`);
+          throw e; // non-200 → ForwardEmail retries later
         }
+        await log(rcpts.length ? "ok" : `no known recipient; keys=${Object.keys(payload).join(",")}`);
         // Always 200 for unknown/expired recipients so the sender isn't retried for days.
         return { status: 200, json: { ok: true, stored: stored.length } };
       }
