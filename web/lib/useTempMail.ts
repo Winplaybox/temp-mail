@@ -120,15 +120,37 @@ export function useTempMail(onNewMail?: (count: number, latest: MessageSummary) 
 
   // boot
   useEffect(() => {
-    api
-      .domains()
-      .then((d) => {
-        setDomains(d.domains);
-        setTtlChoices(d.ttl_choices);
-      })
-      .catch(() => undefined);
+    let cancelled = false;
+    (async () => {
+      let active: string[] | null = null;
+      try {
+        const d = await api.domains();
+        active = d.domains;
+        if (!cancelled) {
+          setDomains(d.domains);
+          setTtlChoices(d.ttl_choices);
+        }
+      } catch {
+        /* keep saved inboxes if the list can't be loaded */
+      }
+      if (cancelled) return;
 
-    const saved = loadSaved();
+      // Drop saved addresses on domains that no longer receive mail.
+      let saved = loadSaved();
+      if (active) {
+        const keep = saved.filter((i) => active!.includes(i.domain));
+        if (keep.length !== saved.length) persist(keep, keep[0]?.id ?? null);
+        saved = keep;
+      }
+      boot(saved);
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  function boot(saved: Inbox[]) {
     const wanted = (() => {
       try {
         return localStorage.getItem(ACTIVE_KEY);
@@ -143,7 +165,7 @@ export function useTempMail(onNewMail?: (count: number, latest: MessageSummary) 
     } else {
       create().catch(() => undefined);
     }
-  }, [create, save]);
+  }
 
   // polling + realtime for the active inbox
   useEffect(() => {

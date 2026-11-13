@@ -1,10 +1,10 @@
 # WinPlayBox Temp Mail
 
-Disposable, receive-only inboxes at **https://temp-mail.winplaybox.in** — addresses look like
-`brisk.otter421@temp-mail.winplaybox.in`.
+Disposable, receive-only inboxes. Site: **https://temp-mail.winplaybox.in**. Mail domains (table `tm_domains`):
+`buzzstormnow.com` (default), `mail.householdia.in`, `mail.smartbuyonline.in` — e.g. `brisk.otter421@buzzstormnow.com`.
 
 ```
-Sender ─► MX temp-mail.winplaybox.in → ForwardEmail (free, catch-all)
+Sender ─► MX of each mail domain → ForwardEmail (free, catch-all)
              └─► POST https://temp-mail.winplaybox.in/api/ingest/<secret>   (retries for days if we're down)
                     └─► Supabase RPC tm_ingest → tm_messages / tm_attachments
                                                └─► Realtime "new_mail" ping → open tab refetches instantly

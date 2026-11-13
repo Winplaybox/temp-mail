@@ -244,7 +244,7 @@ export function service() {
   const key = process.env.SUPABASE_ANON_KEY;
   const secret = process.env.TEMPMAIL_SERVER_SECRET;
   let store: Store;
-  if (dev) store = new MemoryStore(["temp-mail.winplaybox.in"]);
+  if (dev) store = new MemoryStore(["buzzstormnow.com", "mail.householdia.in", "mail.smartbuyonline.in"]);
   else if (url && key && secret) store = new RpcStore(url, key, secret);
   else throw new Error("Set SUPABASE_URL, SUPABASE_ANON_KEY and TEMPMAIL_SERVER_SECRET (or TEMPMAIL_DEV_MEMORY=1).");
 

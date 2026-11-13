@@ -16,14 +16,24 @@
   root directory `web`, Node 22, framework Next.js. Every push to `main` redeploys.
 - Environment variables: see `web/.env.example`. `NEXT_PUBLIC_*` are build-time — redeploy after changing.
 
-## 3. Mail routing (DNS on Hostinger, zone `winplaybox.in`)
-| Type | Name | Value | Priority |
-|---|---|---|---|
-| MX | `temp-mail` | `mx1.forwardemail.net` | 10 |
-| MX | `temp-mail` | `mx2.forwardemail.net` | 10 |
-| TXT | `temp-mail` | `forward-email=https://temp-mail.winplaybox.in/api/ingest/<TEMPMAIL_INGEST_SECRET>?raw=false` | – |
+## 3. Mail routing (DNS on Hostinger)
+Each mail domain gets two MX records and one TXT record at its name:
 
-Only the `temp-mail` subdomain changes; `winplaybox.in` mail (Hostinger Mail) is untouched.
+| Mail domain | DNS zone | Record name |
+|---|---|---|
+| `buzzstormnow.com` | buzzstormnow.com | `@` (whole domain — its Hostinger mailboxes no longer receive) |
+| `mail.householdia.in` | householdia.in | `mail` (store mailboxes untouched) |
+| `mail.smartbuyonline.in` | smartbuyonline.in | `mail` (store mailboxes untouched) |
+
+| Type | Value | Priority |
+|---|---|---|
+| MX | `mx1.forwardemail.net` | 10 |
+| MX | `mx2.forwardemail.net` | 10 |
+| TXT | `forward-email=https://temp-mail.winplaybox.in/api/ingest/<TEMPMAIL_INGEST_SECRET>?raw=false` | – |
+
+Then `insert into public.tm_domains (domain) values ('<mail domain>');`. Disable one with
+`update public.tm_domains set is_active = false where domain = '<mail domain>';` — saved addresses on it
+are dropped from visitors' browsers on their next visit.
 
 ## 4. GitHub Actions secrets (repo → Settings → Secrets → Actions)
 `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `TEMPMAIL_SERVER_SECRET`, `TEMPMAIL_INGEST_SECRET` — used by the hourly
